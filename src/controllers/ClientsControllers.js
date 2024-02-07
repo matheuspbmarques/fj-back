@@ -5,12 +5,14 @@ const ClientsRepository = require('../repository/ClientsRepository')
 const createBodySchema = z.object({
     name: z.string(),
     email: z.string().email('O email informado não está correta, verifique e tente novamente'),
-    phone: z.string()
+    phone: z.string(),
+    coordinateX: z.string(),
+    coordinateY: z.string()
 })
 
 class ClientsControllers{
     async create(req, res){
-        const { name, email, phone } = req.body
+        const { name, email, phone, coordinateX, coordinateY } = req.body
 
         const parseResult = createBodySchema.safeParse(req.body)
 
@@ -30,7 +32,14 @@ class ClientsControllers{
             })
         }
 
-        await ClientsRepository.store(name, email, phone)
+        if(!coordinateX || !coordinateY){
+            return res.status(400).json({
+                error: 'COORDINATE-WRONG',
+                message: 'As coordenadas informadas estão erradas.'
+            })
+        }
+
+        await ClientsRepository.store(name, email, phone, coordinateX, coordinateY)
 
         res.status(201).end('Client created successfully')
     }

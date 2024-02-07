@@ -32,12 +32,38 @@ describe('POST /clients', () => {
         expect(statusCode).toBe(400)
     });
 
+    test('Without coordinate X', async () => {
+        const { statusCode } = await supertest.post('/clients')
+        .send({
+            email: 'email@domain.com',
+            name: 'User Test',
+            phone: '(99) 91234-1234',
+            coordinateY: '-12.2345'
+        })
+
+        expect(statusCode).toBe(400)
+    });
+
+    test('Without coordinate Y', async () => {
+        const { statusCode } = await supertest.post('/clients')
+        .send({
+            email: 'email@domain.com',
+            name: 'User Test',
+            phone: '(99) 91234-1234',
+            coordinateX: '-12.2345'
+        })
+
+        expect(statusCode).toBe(400)
+    });
+
     test('Create user with name Test', async () => {
         const { statusCode } = await supertest.post('/clients')
         .send({
             email: 'email@domain.com',
             name: 'User Test',
-            phone: '(99) 98877-6655'
+            phone: '(99) 98877-6655',
+            coordinateX: '-12.2345',
+            coordinateY: '-1.2345'
         })
 
         expect(statusCode).toBe(201)

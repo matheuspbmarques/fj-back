@@ -1,14 +1,14 @@
 const client = require('../configs/client')
 
 class ClientsRepository{
-    async store(name, email, phone){
+    async store(name, email, phone, coordinateX, coordinateY){
         await client.query(`
             INSERT INTO clients(
-                name, email, phone
+                name, email, phone, coordinate_x, coordinate_y
             ) VALUES (
-                $1, $2, $3
+                $1, $2, $3, $4, $5
             )
-        `, [name, email, phone])
+        `, [name, email, phone, coordinateX, coordinateY])
     }
 
     /**
