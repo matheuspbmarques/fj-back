@@ -54,8 +54,6 @@ class ClientsRepository{
             ${filterQuery}
         `
 
-        console.log(query)
-
         return (await client.query(query)).rows
     }
 }

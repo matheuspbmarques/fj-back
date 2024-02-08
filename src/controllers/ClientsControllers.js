@@ -1,6 +1,7 @@
 const { z } = require('zod')
 const verification = require('../tools/verification')
 const ClientsRepository = require('../repository/ClientsRepository')
+const utm = require('utm')
 
 const createBodySchema = z.object({
     name: z.string(),
@@ -63,6 +64,63 @@ class ClientsControllers{
         ])
 
         return res.json(clients)
+    }
+
+    async getAllRouter(req, res){
+        /**
+         * Local da empresa:
+         * Business 316 - BR316
+        */
+        const startUtm = utm.fromLatLon(-1.3696467605166314, -48.37931530384497)
+
+        const clients = await ClientsRepository.findAll()
+
+        /**
+         * clientId
+         * distance
+         */
+        const visitOrder = []
+
+        for(const client of clients){
+            const clientUtm = utm.fromLatLon(parseFloat(client.coordinate_x), parseFloat(client.coordinate_y))
+
+            const subE = startUtm.easting - clientUtm.easting
+            const subN = startUtm.northing - clientUtm.northing
+
+            const powE = Math.pow(subE, 2)
+            const powN = Math.pow(subN, 2)
+
+            // Distância entre o local da empresa para os clientes em Km
+            const calc = Math.sqrt(powE + powN) / 1000
+
+            // Verifica se o cliente atual é o mais próximo
+            const result = visitOrder.some((visit, i) => {
+
+                // Se o cliente atual é o mais próximo
+                if(calc < visit.distance){
+
+                    // Insere o cliente na frente
+                    visitOrder.splice(i, 0, {
+                        clientId: client.id,
+                        distance: calc
+                    })
+
+                    return true
+                }
+            })
+
+            // Se o cliente atual não for o mais próximo do que todos, então adiciona no final
+            if(!result){
+                visitOrder.push({
+                    clientId: client.id,
+                    distance: calc
+                })
+            }
+        }
+
+        const clientsOrdinate = visitOrder.map(visit => clients.find(client => client.id == visit.clientId))
+
+        res.json(clientsOrdinate)
     }
 }
 
